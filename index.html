@@ -36,8 +36,19 @@
       background: #f4f2ff;
       border-radius: 3px;
       border-left: 5px solid #8e78fd;
-      margin: 5rem 0;
+      margin: 2rem 0;
       padding: 5px;
+    }
+
+    .notice .contactUs {
+      text-align: center;
+      font-weight: 500;
+      font-style: normal;
+      font-size: 12px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      box-sizing: border-box;
+      line-height: 1em;
     }
 
     .section {
@@ -106,13 +117,13 @@
       right: 45px;
     }
 
-    #contactUs a {
+    #estimator .contactUs a {
       border-radius: 300px;
       border: 2px solid #272727;
       padding: 12px 18px;
     }
 
-    #contactUs a:hover {
+    #estimator .contactUs a:hover {
       background-color: #272727;
       color: #fff;
     }
@@ -235,7 +246,7 @@
         </a>
       </div>
       <div data-nc-container="bottom-right" id="rightnav">
-        <nav id="contactUs" class="Header-nav Header-nav--secondary" data-nc-element="secondary-nav" data-content-field="navigation"
+        <nav class="contactUs Header-nav Header-nav--secondary" data-nc-element="secondary-nav" data-content-field="navigation"
           id="yui_3_17_2_1_1595212949879_530">
           <div class="Header-nav-inner" id="yui_3_17_2_1_1595212949879_924">
             <a href="//calico-studio.com/contact-us" class="Header-nav-item" data-test="template-nav" id="yui_3_17_2_1_1595212949879_923">Contact</a>
@@ -343,11 +354,15 @@
                 <td><small>Allows for high-quality custom details, materials and finishes</small></td>
               </tr>
             </table>
+            <p>
+              <em><strong>NOTE:</strong> These estimates are only for the cost of construction.
+              Costs for other services to consider in your overall project budget may need to include: design and architecture, land surveys, landscaping, well and septic installation, etc.</em>
+            </p>
             <div class="notice">
               <div v-if="result.budgetMode === 'UNDER_BUDGET'">
                 <h3>Ask the architect...</h3>
                 <p>
-                  Don't fret! Now is a perfect time to step back an evaluate your priorities.
+                  Don't fret! Now is a perfect time to step back and evaluate your priorities.
                   There are many ways to push and pull the levers of a project to get it within your goals.
                 </p>
               </div>
@@ -369,6 +384,9 @@
                 If you'd like to talk to an architect to discuss your goals and to understand the costs and process
                 associated with this kind of project, call us now or send us an email and we can setup time to connect.
               </p>
+              <div class="contactUs Header-nav-inner" id="yui_3_17_2_1_1595212949879_924">
+                <a href="//calico-studio.com/contact-us" class="Header-nav-item" data-test="template-nav" id="yui_3_17_2_1_1595212949879_923">Contact</a>
+              </div>
             </div>
           </div>
         </div>
@@ -439,7 +457,7 @@
         alert("Please enter square footage");
         return false;
       }
-      if (isNaN(app.squareFootage)) {
+      if (isNaN(app.squareFootage.replace(/,/g, ""))) {
         alert("Please correct your square footage: it must by a number");
         return false;
       }
@@ -447,7 +465,7 @@
         alert("Please enter a budget");
         return false;
       }
-      if (isNaN(app.budget)) {
+      if (isNaN(app.budget.replace(/,/g, ""))) {
         alert("Please correct your budget: it must by a number");
         return false;
       }
@@ -461,14 +479,15 @@
       if (region == null) {
         console.log("Error: invalid region")
       }
-      const squareFootage = app.squareFootage;
+      const budget = app.budget.replace(/,/g, "")
+      const squareFootage = app.squareFootage.replace(/,/g, "");
 
       console.log("region", region);
 
       let projectCost = region.costPerSqft * squareFootage;
       console.log("projectCost:", projectCost);
 
-      let middle = app.budget / region.costPerSqft;
+      let middle = budget / region.costPerSqft;
       let high = middle * .50;
       let economy = middle * 1.25;
 
@@ -500,7 +519,7 @@
 
       let result = {
         projectCost: projectCost,
-        budget: app.budget,
+        budget: budget,
         budgetMode: budgetMode,
         middleSize: middle,
         highSize: high,
