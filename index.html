@@ -1,0 +1,294 @@
+
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <style>
+    .placeholder {
+      color: gray;
+    }
+
+    .highlight {
+      background-color: #f8f9fa;
+    }
+
+    .low-budget {
+      color: red;
+    }
+
+    .good-budget {
+      color: green;
+    }
+
+    [v-cloak] {
+      display:none;
+    }
+
+    .notice {
+      background: #f4f2ff;
+      border-radius: 3px;
+      border-left: 5px solid #8e78fd;
+      margin: 5rem 0;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="container" v-cloak>
+    <div class="row">
+      <h1>Building cost estimator</h1>
+    </div>
+    <div class="row">
+      <div class="col-sm-4 highlight">
+        <form>
+          <div class="form-group">
+            <label for="projectType">What kind of project are you planning?</label>
+            <select v-model="projectType" id="projectType" class="form-control form-control-lg" v-bind:class="[projectType === '' ? 'placeholder' : '']">
+              <option className="disabled" selected disabled value="">Select a project type</option>
+              <option v-for="option in projectTypeOptions" v-bind:value="option.value">
+                {{ option.text }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="region">Which region of the U.S. do you plan to build in?</label>
+            <select v-model="region" id="region" class="form-control form-control-lg" v-bind:class="[region === '' ? 'placeholder' : '']">
+              <option selected disabled value="">Select a region</option>
+              <option v-for="option in regionOptions" v-bind:value="option.value">
+                {{ option.text }}
+              </option>
+            </select>
+            <small id="regionHelp" class="form-text text-muted">Construction costs vary based on where you are building.</small>
+          </div>
+          <div class="form-group">
+            <label for="squareFootage">What is the estimated size of your project?</label>
+            <div class="input-group">
+              <input v-model="squareFootage" id="squareFootage" type="text" class="form-control" aria-describedby="squareFootageHelp" placeholder="Enter a square footage">
+              <div class="input-group-append">
+                <span class="input-group-text">square feet</span>
+              </div>
+            </div>
+            <small id="squareFootageHelp" class="form-text text-muted">Enter the the total amount of square footage you intend to build or change.</small>
+          </div>
+          <hr />
+          <div class="form-group">
+            <label for="budget">What construction budget do you have in mind for this project?</label>
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">$</span>
+              </div>
+              <input v-model="budget" id="budget" type="text" class="form-control" aria-describedby="budgetHelp" placeholder="Enter a dollar amount">
+            </div>
+            <small id="budgetHelp" class="form-text text-muted">Enter the amount of you looking to spend on the construction portion of your project.</small>
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn btn-primary btn-lg" v-on:click="calculate()">Calculate</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-sm-8">
+        <div v-if="result">
+          <h2 v-bind:class="[result.budgetMode === 'UNDER_BUDGET' ? 'low-budget' : 'good-budget']">Estimated Cost: {{currencyFormat(result.projectCost)}}</h2>
+          <div v-if="result.budgetMode === 'GOOD_BUDGET'">
+            <p>Your budget of {{currencyFormat(result.budget)}} would allow you to build your project.</p>
+          </div>
+          <div v-else-if="result.budgetMode === 'NEAR_BUDGET'">
+            <p>Your budget of {{currencyFormat(result.budget)}} is within reach of your project's parameters if you are willing to make some trade-offs.</p>
+          </div>
+          <div v-else-if="result.budgetMode === 'UNDER_BUDGET'">
+            <p>Your budget of {{currencyFormat(result.budget)}} would not be adequate to build a project this size in this area of the country.</p>
+          </div>
+          <div>
+            <p>For your budget, you should be able to build a project within the following parameters:</p>
+            <table class="table">
+              <tr>
+                <th class="w-25">Build quality</th>
+                <th class="w-25">Project size</th>
+                <th class="w-50">Details</th>
+              </tr>
+              <tr>
+                <td>Economy</td>
+                <td>{{numberFormat(result.projectSizes.economy.size)}} sqft</td>
+                <td><small>Limited to basic details, materials and finishes</small></td>
+              </tr>
+              <tr>
+                <td>Standard</td>
+                <td>{{numberFormat(result.projectSizes.middle.size)}} sqft</td>
+                <td><small>Allows for a mix of good quality details, materials and finishes</small></td>
+              </tr>
+              <tr>
+                <td>High-end</td>
+                <td>{{numberFormat(result.projectSizes.high.size)}} sqft</td>
+                <td><small>Allows for high-quality custom details, materials and finishes</small></td>
+              </tr>
+            </table>
+            <div class="notice">
+              <div v-if="result.budgetMode === 'UNDER_BUDGET'">
+                <h3>Ask the architect...</h3>
+                <p>
+                  Don't fret! There are many ways to push and pull the levers of a project to get it within your goals.
+                </p>
+              </div>
+              <div v-else-if="result.budgetMode === 'NEAR_BUDGET'">
+                <h3>Ask the architect...</h3>
+                <p>
+                  Your expectations are very close! This is a great time to talk to an architect to understand the levers you can pull to align your project goals and budget.
+                </p>
+              </div>
+              <div  v-else-if="result.budgetMode === 'GOOD_BUDGET'">
+                <h3>Ask the architect...</h3>
+                <p>
+                  Your budget seems well aligned to your project scope! 
+                  This is a great time to talk to an architect about your goals and to understand the process.
+                </p>
+              </div>
+              <p>
+                If you'd like to talk to an architect to discuss your goals and to understand the costs and process associated with this kind of project, call us now or send us an email and we can setup time to connect.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          Enter your project details in the form and then press calculate.
+        </div>
+      </div>
+
+      <!-- Copyright -->
+      <footer class="small">&copy; Copyright 2020 Calico Studio</footer>
+    </div>
+  </div>
+
+  <script>
+    var regions = [
+      { key: 'south', name: 'South', costPerSqft: 200 },
+      { key: 'northeast', name: 'Northeast', costPerSqft: 300 },
+      { key: 'northwest-pacific', name: 'Pacific Northwest', costPerSqft: 400 },
+      { key: 'ca-southern', name: 'California (Southern)', costPerSqft: 300 },
+      { key: 'ca-northern', name: 'California (Northern)', costPerSqft: 400 },
+    ];
+    var app = new Vue({
+      el: '#app',
+      data: {
+        budget: 20000, 
+        region: 'south',
+        projectType: 'new-home',
+        squareFootage: "2000",
+
+        /*budget: "", 
+        region: "",
+        projectType: "",
+        squareFootage: "",*/
+
+        regionOptions: regions.map( r => ({value: r.key, text: r.name})),
+        projectTypeOptions: [
+          { text: 'Building a new home', value: 'new-home' },
+          { text: 'Home renovation', value: 'renovation' }
+        ],
+        result: null
+      },
+      methods: {
+        calculate: (e) => { 
+          if(!verifyForm(app)) {
+            return;
+          }
+          doCalculate(app) 
+        },
+        currencyFormat: (num) => {
+          return '$' + parseFloat(num).toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        },
+        numberFormat: (num) => {
+          return parseFloat(num).toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+        }
+      }
+    });
+
+    function verifyForm(app) {
+      if(app.projectType === "") {
+        alert("Please select a projectType");
+        return false;
+      }
+      if(app.region === "") {
+        alert("Please select a region");
+        return false;
+      }
+      if(app.budget === "") {
+        alert("Please enter a budget");
+        return false;
+      }
+      if(isNaN(app.budget)) {
+        alert("Please correct your budget: it must by a number");
+        return false;
+      }
+      if(app.squareFootage === "") {
+        alert("Please enter square footage");
+        return false;
+      }
+      if(isNaN(app.squareFootage)) {
+        alert("Please correct your square footage: it must by a number");
+        return false;
+      }
+      return true;
+    }
+
+    function doCalculate(app) {
+      console.log("doCalculate", app.region);
+
+      let region = regions.find(r=> app.region === r.key);
+      if(region == null) {
+        console.log("Error: invalid region")
+      }
+      const squareFootage = app.squareFootage;
+
+      console.log("region", region);
+
+      let projectCost = region.costPerSqft * squareFootage;
+      console.log("projectCost:", projectCost);
+
+      let middle = app.budget/region.costPerSqft;
+      let high = middle * .50;
+      let economy = middle * 1.25;
+
+      let projectSizes = {
+        "economy" : {
+          size: economy,
+          cost: economy*region.costPerSqft
+        },
+        "middle" : {
+          size: middle,
+          cost: middle*region.costPerSqft
+        },
+        "high" : {
+          size: high,
+          cost: high*region.costPerSqft
+        },
+      };
+
+      let budgetMode = "GOOD_BUDGET";
+      if(squareFootage > projectSizes.economy.size) {
+        budgetMode = "UNDER_BUDGET";
+      }
+      if(squareFootage <= projectSizes.economy.size) {
+        budgetMode = "NEAR_BUDGET";
+      }
+      if(squareFootage <= projectSizes.middle.size) {
+        budgetMode = "GOOD_BUDGET";
+      }
+
+      let result = {
+        projectCost: projectCost,
+        budget: app.budget,
+        budgetMode: budgetMode,
+        middleSize: middle,
+        highSize: high,
+        economySize: economy,
+        projectSizes: projectSizes
+      }
+      console.log("result", result);
+      app.result = result;
+    }
+    </script>
+</body>
+</html>
+
+
