@@ -86,7 +86,7 @@
             <select v-model="projectType" id="projectType" class="form-control form-control-lg"
               v-bind:class="[projectType === '' ? 'placeholder' : '']">
               <option className="disabled" selected disabled value="">Select a project type</option>
-              <option v-for="option in projectTypeOptions" v-bind:value="option.value">
+              <option v-for="option in projectTypeOptions" v-bind:value="option.value" >
                 {{ option.text }}
               </option>
             </select>
@@ -96,7 +96,7 @@
             <select v-model="region" id="region" class="form-control form-control-lg"
               v-bind:class="[region === '' ? 'placeholder' : '']">
               <option selected disabled value="">Select a region</option>
-              <option v-for="option in regionOptions" v-bind:value="option.value">
+              <option v-for="option in regionOptions" v-bind:value="option.value" :disabled="option.disabled">
                 {{ option.text }}
               </option>
             </select>
@@ -214,11 +214,56 @@
 
   <script>
     var regions = [
-      { key: 'south', name: 'South', costPerSqft: 200 },
-      { key: 'northeast', name: 'Northeast', costPerSqft: 300 },
-      { key: 'northwest-pacific', name: 'Pacific Northwest', costPerSqft: 400 },
-      { key: 'ca-southern', name: 'California (Southern)', costPerSqft: 300 },
-      { key: 'ca-northern', name: 'California (Northern)', costPerSqft: 400 },
+      { key: 'AL', name: 'Alabama', costPerSqft: 190, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'AK', name: 'Alaska', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'AZ', name: 'Arizona', costPerSqft: 300, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'AR', name: 'Arkansas', costPerSqft: 140, highModifier: 0.857142857142857, economyModifier: 1.21428571428571 },
+      { key: 'CA', name: 'California', costPerSqft: 350, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'CO', name: 'Colorado', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'CT', name: 'Connecticut', costPerSqft: 400, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'DE', name: 'Delaware', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'FL', name: 'Florida', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'GA', name: 'Georgia', costPerSqft: 175, highModifier: 0.857142857142857, economyModifier: 1.25 },
+      { key: 'HI', name: 'Hawaii', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'ID', name: 'Idaho', costPerSqft: 400, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'IL', name: 'Illinois', costPerSqft: 325, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'IN', name: 'Indiana', costPerSqft: 275, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'IA', name: 'Iowa', costPerSqft: 150, highModifier: 0.8, economyModifier: 1.13333333333333 },
+      { key: 'KS', name: 'Kansas', costPerSqft: 150, highModifier: 0.666666666666667, economyModifier: 1.2 },
+      { key: 'KY', name: 'Kentucky', costPerSqft: 175, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'LA', name: 'Louisiana', costPerSqft: 200, highModifier: 0.25, economyModifier: 1.25 },
+      { key: 'ME', name: 'Maine', costPerSqft: 325, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'MD', name: 'Maryland', costPerSqft: 275, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'MA', name: 'Massachusetts', costPerSqft: 375, highModifier: 0.266666666666667, economyModifier: 1.25 },
+      { key: 'MI', name: 'Michigan', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'MN', name: 'Minnesota', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'MS', name: 'Mississippi', costPerSqft: 120, highModifier: 0.75, economyModifier: 1.16666666666667 },
+      { key: 'MO', name: 'Missouri', costPerSqft: 200, highModifier: 0.75, economyModifier: 1.25 },
+      { key: 'MT', name: 'Montana', costPerSqft: 375, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'NE', name: 'Nebraska', costPerSqft: 175, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'NV', name: 'Nevada', costPerSqft: 300, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'NH', name: 'New Hampshire', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'NJ', name: 'New Jersey', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'NM', name: 'New Mexico', costPerSqft: 300, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'NY', name: 'New York', costPerSqft: 650, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'NC', name: 'North Carolina', costPerSqft: 200, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'ND', name: 'North Dakota', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'OH', name: 'Ohio', costPerSqft: 180, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'OK', name: 'Oklahoma', costPerSqft: 200, highModifier: 0.75, economyModifier: 1.25 },
+      { key: 'OR', name: 'Oregon', costPerSqft: 350, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'PA', name: 'Pennsylvania', costPerSqft: 275, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'RI', name: 'Rhode Island', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'SC', name: 'South Carolina', costPerSqft: 200, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'SD', name: 'South Dakota', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'TN', name: 'Tennessee', costPerSqft: 220, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'TX', name: 'Texas', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'UT', name: 'Utah', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'VT', name: 'Vermont', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'VA', name: 'Virginia', costPerSqft: 200, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'WA', name: 'Washington', costPerSqft: 400, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'WV', name: 'West Virginia', costPerSqft: 200, highModifier: 0.5, economyModifier: 1.25 },
+      { key: 'WI', name: 'Wisconsin', costPerSqft: null, highModifier: null, economyModifier: null },
+      { key: 'WY', name: 'Wyoming', costPerSqft: 385, highModifier: 0.5, economyModifier: 1.25 },
     ];
     var app = new Vue({
       el: '#app',
@@ -233,7 +278,7 @@
         projectType: "",
         squareFootage: "",
 
-        regionOptions: regions.map(r => ({ value: r.key, text: r.name })),
+        regionOptions: regions.map(r => ({ value: r.key, text: r.name, disabled: r.economyModifier === null })),
         projectTypeOptions: [
           { text: 'Building a new home', value: 'new-home' },
           { text: 'Home renovation', value: 'renovation' }
@@ -300,8 +345,8 @@
       console.log("projectCost:", projectCost);
 
       let middle = budget / region.costPerSqft;
-      let high = middle * .50;
-      let economy = middle * 1.25;
+      let high = middle * region.highModifier;
+      let economy = middle * region.economyModifier;
 
       let projectSizes = {
         "economy": {
